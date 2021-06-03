@@ -65,7 +65,7 @@ def create_response(query):
 
             ttl = int(time_ - current_time)
             answers = ''.join([domain + " " + str(ttl) + " IN " + rdtype + " " + address + "\n" for address in addresses])
-            response = dns.message.from_text("id " + query.id + "\n"
+            response = dns.message.from_text("id " + str(query.id) + "\n"
                                              "opcode QUERY\n"
                                              "rcode NOERROR\n"
                                              "flags QR\n"
