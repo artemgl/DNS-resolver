@@ -39,17 +39,13 @@ def create_response(query):
     rdatatype = query.question[0].rdtype
 
     if rdatatype == dns.rdatatype.A:
-        filename = "cacheIPv4.txt"
+        cache = cacheIPv4
     elif rdatatype == dns.rdatatype.AAAA:
-        filename = "cacheIPv6.txt"
+        cache = cacheIPv6
     else:
         return None
 
     current_time = time.time()
-
-    f = open(filename, 'r')
-    cache = json.loads(f.readline())
-    f.close()
 
     keys_to_remove = []
     for (key, value) in cache.items():
@@ -90,10 +86,6 @@ def create_response(query):
     answer = response.answer
     if len(answer) > 0:
         cache[domain] = (current_time + answer[0].ttl), [entry.to_text() for entry in answer[0]]
-
-        f = open(filename, 'w')
-        f.write(json.dumps(cache))
-        f.close()
 
     return response
 
@@ -137,10 +129,27 @@ if __name__ == '__main__':
     port = 53
     ip = "127.0.0.1"
 
+    f = open("cacheIPv4.txt", 'r')
+    cacheIPv4 = json.loads(f.readline())
+    f.close()
+
+    f = open("cacheIPv6.txt", 'r')
+    cacheIPv6 = json.loads(f.readline())
+    f.close()
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((ip, port))
 
-    while True:
-        query, _, destination = dns.query.receive_udp(sock)
-        answer = create_response(query)
-        dns.query.send_udp(sock, answer, destination)
+    try:
+        while True:
+            query, _, destination = dns.query.receive_udp(sock)
+            answer = create_response(query)
+            dns.query.send_udp(sock, answer, destination)
+    except KeyboardInterrupt:
+        f = open("cacheIPv4.txt", 'w')
+        f.write(json.dumps(cacheIPv4))
+        f.close()
+
+        f = open("cacheIPv6.txt", 'w')
+        f.write(json.dumps(cacheIPv4))
+        f.close()
