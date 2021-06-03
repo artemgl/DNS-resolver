@@ -65,7 +65,7 @@ def create_response(query):
 
             ttl = int(time_ - current_time)
             answers = ''.join([domain + " " + str(ttl) + " IN " + rdtype + " " + address + "\n" for address in addresses])
-            response = dns.message.from_text("id 746\n"
+            response = dns.message.from_text("id " + query.id + "\n"
                                              "opcode QUERY\n"
                                              "rcode NOERROR\n"
                                              "flags QR\n"
@@ -75,7 +75,6 @@ def create_response(query):
                                              answers +
                                              ";AUTHORITY\n"
                                              ";ADDITIONAL\n")
-            response.id = query.id
             return response
 
     response = find_response(query)
@@ -103,8 +102,7 @@ def find_response(query):
                 break
 
         if server_entry is None:
-            dns_servers = response.get_rrset(dns.message.AUTHORITY, domain, dns.rdataclass.IN,
-                                             dns.rdatatype.NS)
+            dns_servers = response.get_rrset(dns.message.AUTHORITY, domain, dns.rdataclass.IN, dns.rdatatype.NS)
 
             if dns_servers is None or len(dns_servers) == 0:
                 break
