@@ -51,10 +51,14 @@ def create_response(query):
     cache = json.loads(f.readline())
     f.close()
 
+    keys_to_remove = []
     for (key, value) in cache.items():
         time_ = value[0]
         if current_time > time_:
-            cache.pop(key)
+            keys_to_remove.append(key)
+
+    for key in keys_to_remove:
+        cache.pop(key)
 
     pair = cache.get(domain)
     if pair is not None:
